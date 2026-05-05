@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "Job Sponsorship Checker",
+  "version": "1.2.0",
+  "description": "Flags whether a job posting offers visa sponsorship. Green = sponsorship likely available, Red = no sponsorship.",
+  "permissions": ["scripting", "activeTab", "storage"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/jobs/*",
+        "https://www.indeed.com/*",
+        "https://www.glassdoor.com/*",
+        "https://jobs.lever.co/*",
+        "https://boards.greenhouse.io/*",
+        "https://jobs.ashbyhq.com/*",
+        "https://www.ziprecruiter.com/*",
+        "https://www.dice.com/*",
+        "https://www.monster.com/*",
+        "https://careers.google.com/*",
+        "https://www.amazon.jobs/*",
+        "https://jobs.apple.com/*",
+        "https://careers.microsoft.com/*",
+        "https://wellfound.com/*",
+        "https://angel.co/*",
+        "https://www.workatastartup.com/*",
+        "https://jobs.smartrecruiters.com/*",
+        "https://apply.workable.com/*",
+        "https://www.builtinnyc.com/*",
+        "https://www.builtinla.com/*",
+        "https://www.builtinsf.com/*",
+        "https://builtin.com/*",
+        "https://remoteok.com/*",
+        "https://www.remote.co/*",
+        "https://weworkremotely.com/*",
+        "https://www.simplyhired.com/*",
+        "https://www.careerbuilder.com/*",
+        "https://www.jobvite.com/*",
+        "https://hire.withgoogle.com/*",
+        "https://*.myworkdayjobs.com/*",
+        "https://*.icims.com/*",
+        "https://*.taleo.net/*",
+        "https://*.successfactors.com/*"
+      ],
+      "js": ["keywords.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Job Sponsorship Checker"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

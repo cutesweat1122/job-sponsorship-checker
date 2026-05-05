@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Job Sponsorship Checker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 310px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .header {
+      padding: 13px 16px;
+      border-bottom: 1px solid #1e293b;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #1e293b; flex-shrink: 0; }
+    h1 { font-size: 13px; font-weight: 700; color: #f1f5f9; }
+    .subtitle { font-size: 10px; color: #64748b; margin-top: 1px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; border-bottom: 1px solid #1e293b; }
+    .tab-btn {
+      flex: 1; padding: 8px 0; font-size: 11px; font-weight: 600;
+      font-family: inherit; background: transparent; border: none;
+      color: #475569; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 0.15s;
+    }
+    .tab-btn.active { color: #f1f5f9; border-bottom-color: #3b82f6; }
+    .tab-btn:hover:not(.active) { color: #94a3b8; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Result tab ── */
+    .result-area { padding: 13px 16px 8px; }
+    .status-card { border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+    .status-card.green  { background: #14532d; border: 1px solid #16a34a; }
+    .status-card.red    { background: #450a0a; border: 1px solid #dc2626; }
+    .status-card.yellow { background: #451a03; border: 1px solid #d97706; }
+    .status-card.neutral { background: #1e293b; border: 1px solid #334155; }
+    .status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dot.green  { background: #4ade80; box-shadow: 0 0 5px #4ade80; }
+    .dot.red    { background: #f87171; box-shadow: 0 0 5px #f87171; }
+    .dot.yellow { background: #fbbf24; box-shadow: 0 0 5px #fbbf24; }
+    .dot.neutral { background: #94a3b8; }
+    .status-label { font-size: 13px; font-weight: 700; color: #f1f5f9; }
+    .status-detail { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+    .not-job-page { text-align: center; padding: 18px 16px 8px; color: #475569; font-size: 12px; line-height: 1.6; }
+    .not-job-page .icon { font-size: 26px; margin-bottom: 8px; }
+    .scan-btn {
+      display: block; width: 100%; padding: 9px 0;
+      background: #1d4ed8; color: #fff; font-size: 12px; font-weight: 600;
+      font-family: inherit; border: none; border-radius: 8px; cursor: pointer;
+      transition: background 0.15s; margin-bottom: 6px;
+    }
+    .scan-btn:hover { background: #2563eb; }
+    .scan-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+    .rescan-btn {
+      display: block; width: 100%; padding: 7px 0; margin-bottom: 6px;
+      background: transparent; color: #64748b; font-size: 11px;
+      font-family: inherit; border: 1px solid #1e293b; border-radius: 8px; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .rescan-btn:hover { background: #1e293b; color: #94a3b8; }
+
+    /* ── Legend ── */
+    .legend { border-top: 1px solid #1e293b; padding: 10px 16px 12px; }
+    .legend-title { font-size: 10px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 7px; }
+    .legend-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+    .legend-text { font-size: 10px; color: #64748b; line-height: 1.5; }
+    .legend-text strong { color: #94a3b8; }
+
+    /* ── Options tab ── */
+    .options-panel { padding: 12px 16px; }
+    .options-note { font-size: 10px; color: #475569; margin-bottom: 12px; line-height: 1.5; }
+
+    .type-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid #1e293b;
+    }
+    .type-row:last-child { border-bottom: none; }
+    .type-info { flex: 1; min-width: 0; }
+    .type-name { font-size: 12px; font-weight: 600; color: #f1f5f9; margin-bottom: 2px; }
+    .type-desc { font-size: 10px; color: #475569; line-height: 1.4; }
+
+    .switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; margin-left: 12px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #334155; border-radius: 20px; transition: background 0.2s;
+    }
+    .slider::before {
+      content: ""; position: absolute;
+      width: 14px; height: 14px; left: 3px; bottom: 3px;
+      background: #fff; border-radius: 50%; transition: transform 0.2s;
+    }
+    input:checked + .slider { background: #2563eb; }
+    input:checked + .slider::before { transform: translateX(16px); }
+
+    /* ── Keywords tab ── */
+    .kw-panel { padding: 12px 16px 14px; }
+
+    .kw-cat-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .kw-cat-btn {
+      flex: 1; padding: 5px 0; font-size: 11px; font-weight: 600;
+      font-family: inherit; background: #1e293b; border: 1px solid #334155;
+      color: #475569; border-radius: 6px; cursor: pointer; transition: all 0.15s;
+    }
+    .kw-cat-btn.active { background: #1e40af; border-color: #3b82f6; color: #fff; }
+    .kw-cat-btn:hover:not(.active) { color: #94a3b8; }
+
+    .kw-section { margin-bottom: 12px; }
+    .kw-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
+    .kw-section-title.red-title   { color: #f87171; }
+    .kw-section-title.green-title { color: #4ade80; }
+    .kw-list { min-height: 20px; margin-bottom: 7px; }
+    .kw-tag {
+      position: relative; display: inline-flex; align-items: center; gap: 4px;
+      background: #1e293b; border: 1px solid #334155; border-radius: 6px;
+      padding: 3px 7px; margin: 0 3px 4px 0; font-size: 11px; color: #cbd5e1;
+    }
+    .kw-tag-del { background: none; border: none; color: #475569; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; transition: color 0.15s; }
+    .kw-tag-del:hover { color: #f87171; }
+    .kw-builtin-del {
+      position: absolute; top: -5px; right: -5px;
+      width: 13px; height: 13px; border-radius: 999px;
+      background: #1e293b; border: 1px solid #334155; font-size: 10px;
+    }
+    .kw-empty { font-size: 11px; color: #334155; font-style: italic; }
+    .kw-add-row { display: flex; gap: 6px; }
+    .kw-input {
+      flex: 1; padding: 6px 9px; font-size: 11px; font-family: inherit;
+      background: #1e293b; border: 1px solid #334155; border-radius: 7px;
+      color: #e2e8f0; outline: none; transition: border-color 0.15s;
+    }
+    .kw-input:focus { border-color: #3b82f6; }
+    .kw-input::placeholder { color: #475569; }
+    .kw-add-btn {
+      padding: 6px 11px; font-size: 11px; font-weight: 600; font-family: inherit;
+      background: #1e40af; color: #fff; border: none; border-radius: 7px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .kw-add-btn:hover { background: #2563eb; }
+    .kw-message { display: none; margin-top: 5px; font-size: 10px; line-height: 1.4; }
+    .kw-message.info { display: block; color: #64748b; }
+    .kw-message.success { display: block; color: #4ade80; }
+    .kw-note { font-size: 10px; color: #334155; margin-top: 12px; padding-top: 10px; border-top: 1px solid #1e293b; line-height: 1.6; }
+
+    .kw-builtin-row { margin-bottom: 5px; }
+    .kw-builtin-toggle {
+      background: none; border: 1px solid #1e293b; border-radius: 6px;
+      color: #475569; font-size: 10px; font-family: inherit; font-weight: 600;
+      padding: 3px 8px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
+    }
+    .kw-builtin-toggle:hover { color: #94a3b8; border-color: #334155; }
+    .kw-builtin-arrow { font-size: 9px; margin-left: 3px; }
+    .kw-builtin-reset {
+      background: none; border: none; color: #475569; font-size: 10px;
+      font-family: inherit; cursor: pointer; margin-left: 6px; padding: 3px 0;
+    }
+    .kw-builtin-reset:hover { color: #94a3b8; }
+    .kw-builtin-list { margin-bottom: 8px; padding: 6px 0 2px; }
+    .kw-tag.kw-builtin {
+      background: #0f172a; border-color: #1e293b; color: #475569;
+      font-style: italic; cursor: default; padding-right: 12px;
+    }
+    .kw-custom-list { margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🔍</div>
+    <div>
+      <h1>Sponsorship Checker</h1>
+      <div class="subtitle">Visa sponsorship detector</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="result">Result</button>
+    <button class="tab-btn" data-tab="options">Options</button>
+    <button class="tab-btn" data-tab="keywords">Keywords</button>
+  </div>
+
+  <!-- Result Tab -->
+  <div id="tab-result" class="tab-panel active">
+    <div class="result-area" id="result-area">
+      <div class="not-job-page"><div class="icon">📄</div><div>No result yet for this page.</div></div>
+      <button class="scan-btn" id="scan-btn">Scan This Page</button>
+    </div>
+    <div class="legend">
+      <div class="legend-title">How it works</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div><div class="legend-text"><strong>Green</strong> — Sponsorship offered or not mentioned</div></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div><div class="legend-text"><strong>Red</strong> — No sponsorship (citizen/clearance required)</div></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div><div class="legend-text"><strong>Yellow</strong> — Sponsorship mentioned but unclear (keywords: sponsor/sponsorship, visa, work authorization, H-1B, green card, citizenship, clearance, OPT, CPT)</div></div>
+    </div>
+  </div>
+
+  <!-- Options Tab -->
+  <div id="tab-options" class="tab-panel">
+    <div class="options-panel">
+      <div class="options-note">Enable the types of sponsorship you need. Only enabled types are checked during a scan.</div>
+
+      <div class="type-row">
+        <div class="type-info">
+          <div class="type-name">General Sponsorship</div>
+          <div class="type-desc">Citizenship, clearance, work authorization, export control</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="toggle-general" /><span class="slider"></span></label>
+      </div>
+
+      <div class="type-row">
+        <div class="type-info">
+          <div class="type-name">H-1B Sponsorship</div>
+          <div class="type-desc">Employer-sponsored H-1B visa language</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="toggle-h1b" /><span class="slider"></span></label>
+      </div>
+
+      <div class="type-row">
+        <div class="type-info">
+          <div class="type-name">OPT Sponsorship</div>
+          <div class="type-desc">Optional Practical Training hire eligibility</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="toggle-opt" /><span class="slider"></span></label>
+      </div>
+
+      <div class="type-row">
+        <div class="type-info">
+          <div class="type-name">CPT Sponsorship</div>
+          <div class="type-desc">Curricular Practical Training hire eligibility</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="toggle-cpt" /><span class="slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keywords Tab -->
+  <div id="tab-keywords" class="tab-panel">
+    <div class="kw-panel">
+      <div class="kw-cat-tabs">
+        <button class="kw-cat-btn active" data-cat="general">General</button>
+        <button class="kw-cat-btn" data-cat="h1b">H-1B</button>
+        <button class="kw-cat-btn" data-cat="opt">OPT</button>
+        <button class="kw-cat-btn" data-cat="cpt">CPT</button>
+      </div>
+
+      <div class="kw-section">
+        <div class="kw-section-title red-title">🔴 Red — No Sponsorship</div>
+        <div class="kw-list" id="red-list"></div>
+        <div class="kw-add-row">
+          <input class="kw-input" id="red-input" type="text" placeholder="Add phrase…" />
+          <button class="kw-add-btn" id="red-add">Add</button>
+        </div>
+        <div class="kw-message" id="red-message"></div>
+      </div>
+
+      <div class="kw-section">
+        <div class="kw-section-title green-title">🟢 Green — Sponsorship Available</div>
+        <div class="kw-list" id="green-list"></div>
+        <div class="kw-add-row">
+          <input class="kw-input" id="green-input" type="text" placeholder="Add phrase…" />
+          <button class="kw-add-btn" id="green-add">Add</button>
+        </div>
+        <div class="kw-message" id="green-message"></div>
+      </div>
+
+      <div class="kw-note">Custom phrases matched case-insensitively. Built-in patterns can be removed with × and restored per section. Changes apply on the next scan.</div>
+    </div>
+  </div>
+
+  <script src="keywords.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
