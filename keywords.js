@@ -5,6 +5,7 @@
     general: {
       red: [
         { label: "no sponsorship / no visa sponsorship", pattern: "\\bno\\s+(?:visa\\s+)?sponsorship\\b" },
+        { label: "without [wildcard] sponsorship", pattern: "\\bwithout\\s+(?:[\\w-]+\\s+){0,6}sponsorship\\b" },
         { label: "will not sponsor", pattern: "\\bwill\\s+not\\s+(?:provide\\s+)?sponsor" },
         { label: "cannot sponsor", pattern: "\\bcannot\\s+(?:provide\\s+)?sponsor" },
         { label: "not able / not eligible to sponsor", pattern: "\\bnot\\s+(?:able|eligible)\\s+to\\s+sponsor" },
@@ -13,6 +14,7 @@
         { label: "sponsorship not available / offered / provided", pattern: "\\bsponsorship\\s+(?:is\\s+)?not\\s+(?:available|offered|provided)" },
         { label: "not currently offering sponsorship", pattern: "\\bnot\\s+(?:currently\\s+)?(?:offering|providing)\\s+(?:work\\s+)?sponsor" },
         { label: "not offer work sponsorship", pattern: "\\bnot\\s+offer\\s+(?:work\\s+)?sponsor" },
+        { label: "non-sponsored", pattern: "\\bnon-sponsored\\b" },
         { label: "we do not sponsor", pattern: "\\bwe\\s+do\\s+not\\s+sponsor\\b" },
         { label: "not eligible for (employment) (visa) sponsorship", pattern: "\\bnot\\s+eligible\\s+for\\s+(?:employment\\s+)?(?:visa\\s+)?sponsor" },
         { label: "must be legally (authorized) to work permanently", pattern: "\\bmust\\s+be\\s+legally\\s+(?:authorized\\s+)?to\\s+work\\s+permanently\\b" },

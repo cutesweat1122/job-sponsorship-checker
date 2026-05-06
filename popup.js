@@ -208,8 +208,14 @@ function runScan() {
   });
 }
 
-function isYellowWithoutMatches(result) {
-  return result?.status === "yellow" && (!result.matches || result.matches.length === 0);
+function shouldRefreshInitialResult(result) {
+  if (!result) return true;
+  const hasMatches = result.matches && result.matches.length > 0;
+  const shouldHaveMatches =
+    result.status === "red" ||
+    result.status === "yellow" ||
+    (result.status === "green" && result.label !== "Not Mentioned");
+  return shouldHaveMatches && !hasMatches;
 }
 
 /* ── Options ── */
@@ -452,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
       (results) => {
         if (chrome.runtime.lastError) { renderResult(null); return; }
         const result = results && results[0] && results[0].result ? results[0].result : null;
-        if (isYellowWithoutMatches(result)) {
+        if (shouldRefreshInitialResult(result)) {
           runScan();
           return;
         }
