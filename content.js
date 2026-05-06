@@ -40,7 +40,13 @@
       allGreenMatches.push(...[...builtinGreen, ...custGreen].filter((p) => p.test(text)));
     }
 
-    const hasAnyMention = NEUTRAL_HINTS.some((p) => p.test(text));
+    const neutralMatches = NEUTRAL_HINTS
+      .map((p) => {
+        const m = text.match(p);
+        return m ? m[0] : "";
+      })
+      .filter(Boolean);
+    const hasAnyMention = neutralMatches.length > 0;
 
     if (allRedMatches.length > 0 && allGreenMatches.length === 0) {
       return {
@@ -63,7 +69,12 @@
         matches: [],
       };
     }
-    return { status: "yellow", label: "Unclear", detail: "Sponsorship is mentioned but intent is ambiguous.", matches: [] };
+    return {
+      status: "yellow",
+      label: "Unclear",
+      detail: "Sponsorship is mentioned but intent is ambiguous.",
+      matches: neutralMatches,
+    };
   }
 
   function buildBadge(result) {

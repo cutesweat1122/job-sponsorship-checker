@@ -53,7 +53,13 @@ function analyzeAndInject(enabledTypes, customKeywords, disabledBuiltins) {
       allGreenMatches.push(...[...builtinGreen, ...custGreen].filter((p) => p.test(text)));
     }
 
-    const hasAnyMention = NEUTRAL_HINTS.some((p) => p.test(text));
+    const neutralMatches = NEUTRAL_HINTS
+      .map((p) => {
+        const m = text.match(p);
+        return m ? m[0] : "";
+      })
+      .filter(Boolean);
+    const hasAnyMention = neutralMatches.length > 0;
 
     if (allRedMatches.length > 0 && allGreenMatches.length === 0) {
       return { status: "red", label: "No Sponsorship", detail: "This posting suggests sponsorship is NOT available.",
@@ -66,7 +72,12 @@ function analyzeAndInject(enabledTypes, customKeywords, disabledBuiltins) {
     if (!hasAnyMention) {
       return { status: "green", label: "Not Mentioned", detail: "Sponsorship is not mentioned — often means it may be available or negotiable.", matches: [] };
     }
-    return { status: "yellow", label: "Unclear", detail: "Sponsorship is mentioned but intent is ambiguous.", matches: [] };
+    return {
+      status: "yellow",
+      label: "Unclear",
+      detail: "Sponsorship is mentioned but intent is ambiguous.",
+      matches: neutralMatches,
+    };
   }
 
   function buildBadge(result) {
@@ -195,6 +206,10 @@ function runScan() {
       );
     });
   });
+}
+
+function isYellowWithoutMatches(result) {
+  return result?.status === "yellow" && (!result.matches || result.matches.length === 0);
 }
 
 /* ── Options ── */
@@ -437,6 +452,10 @@ document.addEventListener("DOMContentLoaded", () => {
       (results) => {
         if (chrome.runtime.lastError) { renderResult(null); return; }
         const result = results && results[0] && results[0].result ? results[0].result : null;
+        if (isYellowWithoutMatches(result)) {
+          runScan();
+          return;
+        }
         renderResult(result);
       }
     );
